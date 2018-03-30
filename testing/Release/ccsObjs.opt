@@ -1,0 +1,1 @@
+"./main.obj" "./pinmux.obj" "./shamd5_userinput.obj" "./startup_ccs.obj" "./uart_if.obj" "../cc3200v1p32.cmd" -llibc.a -ldriverlib.a 
