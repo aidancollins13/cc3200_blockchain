@@ -96,6 +96,7 @@ void SetKeys(void);
 void GenerateHash(unsigned int uiConfig,unsigned char
         *puiData,unsigned char *puiResult,unsigned int uiDataLength);
 void SHAMD5IntHandler(void);
+int check_block(struct Block *b);2
 volatile bool g_bContextReadyFlag;
 volatile bool g_bParthashReadyFlag;
 volatile bool g_bInputReadyFlag;
@@ -142,6 +143,7 @@ GenerateHash(unsigned int uiConfig,unsigned char *puiData,
         unsigned char *puiResult,unsigned int uiDataLength)
 {
 
+	UART_PRINT("HASHING: %s", data);
     //
     // Step1: Enable Interrupts
     // Step2: Wait for Context Ready Inteerupt
@@ -224,16 +226,18 @@ struct Block{
 	int index;
 	char pHash[32];
 	char hash[32];
-	char data[32];
+	char data[42];
 };
 
 struct Block* gen_block(struct Block* lastb, char* data ){
 
 	struct Block *b = malloc(sizeof(struct Block));
-
+	//char data;
+	// prep the data
+	strcpy(data, last)
 	b->index = lastb->index +1;
 	strcpy(b->hash, lastb->hash);
-	//strcpy(b.hahs, GenHash());
+	GenerateHash(SHA_MD5_ALGO_SHA256, data, b->hash, 32)
 	strcpy(b->data, data);
 	return b;
 
@@ -287,7 +291,7 @@ main()
 
 
     UART_PRINT("data %s\n\r",data);
-    GenerateHash(uiConfig, data,  result, 4);
+    GenerateHash(uiConfig, "test,  result, 4);
     for(u8count=0;u8count<uiHashLength;u8count++)
            {
              UART_PRINT("%02x",*(result+u8count));
