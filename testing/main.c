@@ -234,10 +234,12 @@ struct Block* gen_block(struct Block* lastb, char* data ){
 	struct Block *b = malloc(sizeof(struct Block));
 	//char data;
 	// prep the data
-	strcpy(data, last)
+	char d[42];
+	strcpy(d, lastb->hash);
+	strcpy(d+32, data);
 	b->index = lastb->index +1;
 	strcpy(b->hash, lastb->hash);
-	GenerateHash(SHA_MD5_ALGO_SHA256, data, b->hash, 32)
+	GenerateHash(SHA_MD5_ALGO_SHA256, d, b->hash, 42);
 	strcpy(b->data, data);
 	return b;
 
@@ -291,7 +293,7 @@ main()
 
 
     UART_PRINT("data %s\n\r",data);
-    GenerateHash(uiConfig, "test,  result, 4);
+    GenerateHash(uiConfig, "test",  result, 4);
     for(u8count=0;u8count<uiHashLength;u8count++)
            {
              UART_PRINT("%02x",*(result+u8count));
