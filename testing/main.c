@@ -96,11 +96,12 @@ void SetKeys(void);
 void GenerateHash(unsigned int uiConfig,unsigned char
         *puiData,unsigned char *puiResult,unsigned int uiDataLength);
 void SHAMD5IntHandler(void);
-int check_block(struct Block *b);2
+int check_block(struct Block *b);
+
 volatile bool g_bContextReadyFlag;
 volatile bool g_bParthashReadyFlag;
 volatile bool g_bInputReadyFlag;
-volatile bool g_bOutputReadyFlag;
+volatile bool g_bOutputReadyFlag;222
 
 
 static void
@@ -143,7 +144,7 @@ GenerateHash(unsigned int uiConfig,unsigned char *puiData,
         unsigned char *puiResult,unsigned int uiDataLength)
 {
 
-	UART_PRINT("HASHING: %s", data);
+	UART_PRINT("HASHING: %s\r\n", puiData);
     //
     // Step1: Enable Interrupts
     // Step2: Wait for Context Ready Inteerupt
@@ -224,28 +225,38 @@ SHAMD5IntHandler(void)
 
 struct Block{
 	int index;
-	char pHash[32];
-	char hash[32];
-	char data[42];
+	unsigned char pHash[32];
+	unsigned char hash[32];
+	unsigned char data[10];
 };
+
+
 
 struct Block* gen_block(struct Block* lastb, char* data ){
 
 	struct Block *b = malloc(sizeof(struct Block));
 	//char data;
 	// prep the data
-	char d[42];
+	unsigned char d[42];
 	strcpy(d, lastb->hash);
 	strcpy(d+32, data);
+	memset(d+42, 0,1);
 	b->index = lastb->index +1;
 	strcpy(b->hash, lastb->hash);
-	GenerateHash(SHA_MD5_ALGO_SHA256, d, b->hash, 42);
-	strcpy(b->data, data);
+	GenerateHash(SHAMD5_ALGO_SHA256, d, b->hash, 42);
+	strcpy(b->data, d);
 	return b;
 
 }
 
+struct Block * gen_genesis_block(){
+	struct Block *b = malloc(sizeof(struct Block));
+	strcpy(b->data, "000000000");
+	GenerateHash(SHAMD5_ALGO_SHA256, "genesis block", b->hash, 13);
+	return b;
 
+
+}
 
 
 unsigned char *result;
@@ -253,6 +264,7 @@ unsigned char* data;
 unsigned char *puiKey1;
 unsigned int uiDataLength;
 unsigned int u8count;
+struct Block *blocks[10];
 
 
 unsigned int iSize, uiMsgLen, uiConfig, uiHashLength;
@@ -264,14 +276,13 @@ main()
     // Initialize Board configurations
     //
     BoardInit();
-    
-    //
-    // Power on the corresponding GPIO port B for 9,10,11.
-    // Set up the GPIO lines to mode 0 (GPIO)
-    //
+    UDMAInit();
     PinMuxConfig();
     InitTerm();
     MAP_PRCMPeripheralClkEnable(PRCM_DTHE, PRCM_RUN_MODE_CLK);
+
+    // Set up wireless connection
+
       //
       // Enable interrupts.
       //
@@ -279,26 +290,39 @@ main()
     MAP_SHAMD5IntRegister(SHAMD5_BASE, SHAMD5IntHandler);
 
     UART_PRINT("enabled int\n\r");
-    uiConfig=SHAMD5_ALGO_SHA256;
-    uiHashLength=32;
+    blocks[0] = gen_genesis_block();
 
-    data=(unsigned char *)malloc(5);
-    memset(data,0,5);
-    memcpy(data,"test",(4));
-
-    result=(unsigned char *)malloc(64);
-                memset(result,0,64);
-    UART_PRINT("loaded sha256 settings\n\r");
-    UART_PRINT("Generating Hash\n\r");
-
-
-    UART_PRINT("data %s\n\r",data);
-    GenerateHash(uiConfig, "test",  result, 4);
-    for(u8count=0;u8count<uiHashLength;u8count++)
+//    uiConfig=SHAMD5_ALGO_SHA256;
+//    uiHashLength=32;
+//
+//    data=(unsigned char *)malloc(5);
+//    memset(data,0,5);
+//    memcpy(data,"test",(4));
+//
+//    result=(unsigned char *)malloc(64);
+//                memset(result,0,64);
+//    UART_PRINT("loaded sha256 settings\n\r");
+//    UART_PRINT("Generating Hash\n\r");
+//
+//
+//    UART_PRINT("data %s\n\r",data);
+//    GenerateHash(uiConfig, "test",  result, 4);
+    for(u8count=0;u8count<32;u8count++)
            {
-             UART_PRINT("%02x",*(result+u8count));
+             UART_PRINT("%02x",*(blocks[0]->hash + u8count));
            }
            UART_PRINT("\n\r");
+
+    blocks[1] = gen_block(blocks[0], "test00000");
+    UART_PRINT("block1 data: %s\r\n", blocks[1]->data);
+    UART_PRINT("block1 last hash: %s\r\n", blocks[1]->pHash);
+
+    for(u8count=0;u8count<32;u8count++)
+               {
+                 UART_PRINT("%02x",*(blocks[1]->hash + u8count));
+               }
+               UART_PRINT("\n\r");
+
     UART_PRINT("end of main\n\r");
     return 0;
 }
