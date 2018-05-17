@@ -202,6 +202,17 @@ struct Block * gen_genesis_block(){
 
 }
 
+int verify_block(struct Block * block, struct Block* lastb){
+	unsigned char h[32];
+	unsigned char d[32];
+	strcpy(d, lastb->hash);
+	strcpy(d+32, block->data);
+	memset(d+42, 0, 1);
+	GenerateHAsh(SHAMD5_ALGO_SHA256,d,h,32);
+
+	return strcmp(h, block->hash);
+}
+
 
 unsigned char *result;
 unsigned char* data;
