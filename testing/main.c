@@ -197,6 +197,7 @@ struct Block * gen_genesis_block(){
 	struct Block *b = malloc(sizeof(struct Block));
 	strcpy(b->data, "000000000");
 	GenerateHash(SHAMD5_ALGO_SHA256, "genesis block", b->hash, 13);
+	b->index = 0;
 	return b;
 
 
